@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+if [ -f "/var/run/docker.pid" ]; then
+		rm -rf /var/run/docker.pid
+fi
+
 if [ "$#" -eq 0 -o "${1:0:1}" = '-' ]; then
 	set -- docker daemon \
 		--host=unix:///var/run/docker.sock \
