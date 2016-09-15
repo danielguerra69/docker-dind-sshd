@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
+# X forward version
 
+#Docker
+#clean pid after unexpected kill
 if [ -f "/var/run/docker.pid" ]; then
 		rm -rf /var/run/docker.pid
 fi
@@ -19,7 +22,15 @@ if [ "$1" = 'docker' -a "$2" = 'daemon' ]; then
 	set -- sh "$(which dind)" "$@"
 fi
 
-#SSHD
+#Xorg
+# prepare for X forwarding
+#prepare xauth
+touch /root/.Xauthority
+
+# generate machine-id
+uuidgen > /etc/machine-id
+
+#SSHD / X related
 # prepare keys
 if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then
 	# generate fresh rsa key
@@ -33,7 +44,17 @@ fi
 if [ ! -d "/var/run/sshd" ]; then
 	mkdir -p /var/run/sshd
 fi
-
+#prepare sshd config for X
+if [ -f "/etc/ssh/sshd_config" ]; then
+	sed -i "s/#X11Forwarding no/X11Forwarding yes/g" /etc/ssh/sshd_config
+fi
+#prepare ssh config for X
+if [ -f "/etc/ssh/ssh_config" ]; then
+	sed -i "s/#X11Forwarding no/X11Forwarding yes/g" /etc/ssh/ssh_config
+	echo "ForwardX11Trusted yes" >> /etc/ssh/ssh_config
+fi
+# reread all config
+source /etc/profile
 # start sshd
 /usr/sbin/sshd -D &
 
