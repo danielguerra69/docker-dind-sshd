@@ -15,7 +15,13 @@ docker create -v /root/.ssh --name ssh-container scratch /bin/true
 docker cp id_rsa.pub ssh-container:/root/.ssh/authorized_keys
 ```
 
-Then the start sshd service
+For ssh key forwarding use ssh-agent on your workstation.
+```bash
+ssh-agent
+ssh-add id_rsa
+```
+
+Then the start sshd service on the dockerhost
 ```bash
 docker run -p 4848:22 --privileged --name docker-sshd --hostname docker-sshd --volumes-from ssh-container  -d danielguerra/docker-dind-sshd
 ```
@@ -64,15 +70,6 @@ ssh to your new container
 ssh -i id_rsa -p 4848 -X root@<dockerhost>
 ```
 
-For ssh key forwarding use ssh-agent
-```bash
-ssh-agent
-ssh-add id_rsa
-ssh -A -p 4848 -X root@<dockerhost>
-ssh -C -A -t -X -p 4848  root@<dockerhost> ssh -C -A -t -X -p 777 root@<hop> firefox
-```
-in the last example, each hop must have the same authorized_keys.
-
 # Xquartz note
 
 For cmd+v cmd+c e.g. copy/paste to work you need to do this on your mac.
@@ -94,14 +91,35 @@ restart Xquartz and cmd+c and cmd+v works.
 
 ssh port forwarding is very useful for
 easy access to started containers.
+
+From your workstation
 ```bash
 ssh -i id_rsa -p 4848 -L 5900:127.0.0.1:5900 root@<dockerhost>
 docker run -p 5900:5900 -d vncserver
 ```
+
 Any container started with -p <port-ext>:<port-int> use
 -L <localport>:127.0.0.1:<port-ext>
 
 On the host you started ssh you can connect to 127.0.0.1:5900
 with your vnc viewer
+
+
+Or with the xorg version, a running X, and the ssh-agent
+You can start a X-forward alpine danielguerra/alpine-sshx
+in the docker-dind-sshd container.
+
+From your workstation
+```bash
+ssh -A -p 4848 -X root@<dockerhost>
+docker run -p 777 --volumes-from ssh-container --name alpine-sshdx -d danielguerra/alpine-sshdx
+docker cp /root/.ssh/authorized_keys ssh-container:/root/.ssh
+docker exec -ti alpine-sshdx /bin/#!/bin/sh
+apk --update add firefox-esr
+exit
+exit
+ssh -C -A -t -X -p 4848  root@<dockerhost> ssh -C -A -t -X -p 777 root@127.0.0.1 firefox
+```
+in the last example, each hop must have the same authorized_keys. If all went well you will see firefox.
 
 This is a fork Git repo of the Docker [official image](https://docs.docker.com/docker-hub/official_repos/) for [docker](https://registry.hub.docker.com/_/docker/). See [the Docker Hub page](https://registry.hub.docker.com/_/docker/) for the full readme on how to use this Docker image and for information regarding contributing and issues.
