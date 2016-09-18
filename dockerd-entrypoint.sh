@@ -11,7 +11,7 @@ fi
 if [ "$#" -eq 0 -o "${1:0:1}" = '-' ]; then
 	set -- docker daemon \
 		--host=unix:///var/run/docker.sock \
-		--host=tcp://0.0.0.0:2375 \
+		--host=tcp://127.0.0.1:2375 \
 		--storage-driver=vfs \
 		"$@"
 fi
@@ -53,9 +53,13 @@ if [ -f "/etc/ssh/ssh_config" ]; then
 	sed -i "s/#X11Forwarding no/X11Forwarding yes/g" /etc/ssh/ssh_config
 	echo "ForwardX11Trusted yes" >> /etc/ssh/ssh_config
 fi
-# reread all config
-source /etc/profile
+
 # start sshd
 /usr/sbin/sshd -D &
+
+# set docker settings
+echo "export DOCKER_HOST='tcp://127.0.0.1:2375'" >> /etc/profile
+# reread all config
+source /etc/profile
 
 exec "$@"
