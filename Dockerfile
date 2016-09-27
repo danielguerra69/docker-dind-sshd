@@ -40,11 +40,10 @@ RUN wget "https://raw.githubusercontent.com/docker/docker/${DIND_COMMIT}/hack/di
 COPY dockerd-entrypoint.sh /usr/local/bin/
 
 VOLUME /var/lib/docker
-
+EXPOSE 2375 22
 
 #make sure we get fresh keys
 RUN rm -rf /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key
-
-EXPOSE 2375 22
+ENV DOCKER_HOST tcp://127.0.0.1:2375
 ENTRYPOINT ["dockerd-entrypoint.sh"]
 CMD []
