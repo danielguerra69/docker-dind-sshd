@@ -12,7 +12,7 @@ if [ "$#" -eq 0 -o "${1:0:1}" = '-' ]; then
 	set -- docker daemon \
 		--host=unix:///var/run/docker.sock \
 		--host=tcp://127.0.0.1:2375 \
-		--storage-driver=vfs \
+		--storage-driver=aufs
 		"$@"
 fi
 

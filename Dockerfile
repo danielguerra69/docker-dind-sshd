@@ -44,7 +44,11 @@ VOLUME /var/lib/docker
 
 #make sure we get fresh keys
 RUN rm -rf /etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_dsa_key
+<<<<<<< HEAD
 
 EXPOSE 2375 22
+=======
+ENV DOCKER_HOST tcp://127.0.0.1:2375
+>>>>>>> master
 ENTRYPOINT ["dockerd-entrypoint.sh"]
 CMD []
