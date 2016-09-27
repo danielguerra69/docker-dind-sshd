@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
+# X forward version
 
+#Docker
+#clean pid after unexpected kill
 if [ -f "/var/run/docker.pid" ]; then
 		rm -rf /var/run/docker.pid
 fi
@@ -8,8 +11,8 @@ fi
 if [ "$#" -eq 0 -o "${1:0:1}" = '-' ]; then
 	set -- docker daemon \
 		--host=unix:///var/run/docker.sock \
-		--host=tcp://0.0.0.0:2375 \
-		--storage-driver=vfs \
+		--host=tcp://127.0.0.1:2375 \
+		--storage-driver=aufs \
 		"$@"
 fi
 
@@ -18,6 +21,8 @@ if [ "$1" = 'docker' -a "$2" = 'daemon' ]; then
 	# (and we'll run dind explicitly with "sh" since its shebang is /bin/bash)
 	set -- sh "$(which dind)" "$@"
 fi
+
+
 
 #SSHD
 # prepare keys
@@ -36,5 +41,10 @@ fi
 
 # start sshd
 /usr/sbin/sshd -D &
+
+# set docker settings
+echo "export DOCKER_HOST='tcp://127.0.0.1:2375'" >> /etc/profile
+# reread all config
+source /etc/profile
 
 exec "$@"
