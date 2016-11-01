@@ -22,6 +22,7 @@ if [ "$1" = 'docker' -a "$2" = 'daemon' ]; then
 	set -- sh "$(which dind)" "$@"
 fi
 
+
 #Xorg
 # prepare for X forwarding
 #prepare xauth
